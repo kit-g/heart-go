@@ -48,6 +48,117 @@ definitions:
         example: 100
         type: integer
     type: object
+  Set:
+    properties:
+      completed:
+        example: true
+        type: boolean
+      distance:
+        example: 10
+        type: number
+      duration:
+        example: 10
+        type: number
+      id:
+        example: "1234567890"
+        type: string
+      reps:
+        example: 10
+        type: integer
+      weight:
+        example: 100
+        type: number
+    required:
+    - completed
+    - id
+    type: object
+  Workout:
+    properties:
+      end:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      exercises:
+        items:
+          $ref: '#/definitions/WorkoutExercise'
+        type: array
+      id:
+        example: 2zsp6iMWgOx9n6qQxZm0GmeXog1
+        type: string
+      name:
+        example: Legs
+        type: string
+      start:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  WorkoutExercise:
+    properties:
+      exercise:
+        example: Push Up
+        type: string
+      sets:
+        items:
+          $ref: '#/definitions/Set'
+        type: array
+    type: object
+  WorkoutIn:
+    properties:
+      end:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      exercises:
+        items:
+          $ref: '#/definitions/models.WorkoutExerciseIn'
+        type: array
+      id:
+        example: 2zsp6iMWgOx9n6qQxZm0GmeXog1
+        type: string
+      name:
+        example: Legs
+        type: string
+      start:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    required:
+    - exercises
+    - id
+    - start
+    type: object
+  models.SetIn:
+    properties:
+      completed:
+        example: true
+        type: boolean
+      distance:
+        example: 10
+        type: number
+      duration:
+        example: 10
+        type: number
+      reps:
+        example: 10
+        type: integer
+      weight:
+        example: 100
+        type: number
+    required:
+    - completed
+    type: object
+  models.WorkoutExerciseIn:
+    properties:
+      exercise:
+        example: Push Up
+        type: string
+      order:
+        example: 1
+        type: integer
+      sets:
+        items:
+          $ref: '#/definitions/models.SetIn'
+        type: array
+    required:
+    - exercise
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -85,6 +196,39 @@ paths:
       security:
       - BearerAuth: []
       summary: List all exercises
+      tags:
+      - workouts
+  /workouts:
+    post:
+      consumes:
+      - application/json
+      description: Validates, saves and returns a workout
+      operationId: makeWorkout
+      parameters:
+      - description: Workout request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/WorkoutIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Workout'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Creates a workout
       tags:
       - workouts
 swagger: "2.0"

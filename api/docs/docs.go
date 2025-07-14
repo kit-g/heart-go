@@ -63,6 +63,58 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/workouts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Validates, saves and returns a workout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workouts"
+                ],
+                "summary": "Creates a workout",
+                "operationId": "makeWorkout",
+                "parameters": [
+                    {
+                        "description": "Workout request",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/WorkoutIn"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Workout"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -131,6 +183,163 @@ const docTemplate = `{
                 "width": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "Set": {
+            "type": "object",
+            "required": [
+                "completed",
+                "id"
+            ],
+            "properties": {
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "distance": {
+                    "type": "number",
+                    "example": 10
+                },
+                "duration": {
+                    "type": "number",
+                    "example": 10
+                },
+                "id": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
+                "reps": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 100
+                }
+            }
+        },
+        "Workout": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkoutExercise"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "2zsp6iMWgOx9n6qQxZm0GmeXog1"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Legs"
+                },
+                "start": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "WorkoutExercise": {
+            "type": "object",
+            "properties": {
+                "exercise": {
+                    "type": "string",
+                    "example": "Push Up"
+                },
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Set"
+                    }
+                }
+            }
+        },
+        "WorkoutIn": {
+            "type": "object",
+            "required": [
+                "exercises",
+                "id",
+                "start"
+            ],
+            "properties": {
+                "end": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.WorkoutExerciseIn"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "2zsp6iMWgOx9n6qQxZm0GmeXog1"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Legs"
+                },
+                "start": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "models.SetIn": {
+            "type": "object",
+            "required": [
+                "completed"
+            ],
+            "properties": {
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "distance": {
+                    "type": "number",
+                    "example": 10
+                },
+                "duration": {
+                    "type": "number",
+                    "example": 10
+                },
+                "reps": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 100
+                }
+            }
+        },
+        "models.WorkoutExerciseIn": {
+            "type": "object",
+            "required": [
+                "exercise"
+            ],
+            "properties": {
+                "exercise": {
+                    "type": "string",
+                    "example": "Push Up"
+                },
+                "order": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SetIn"
+                    }
                 }
             }
         }
