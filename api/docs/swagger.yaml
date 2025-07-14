@@ -1,0 +1,90 @@
+basePath: /
+definitions:
+  ErrorResponse:
+    properties:
+      code:
+        example: InternalError
+        type: string
+      error:
+        example: An unexpected error occurred
+        type: string
+    type: object
+  Exercise:
+    properties:
+      asset:
+        $ref: '#/definitions/ImageDescription'
+      category:
+        example: Body weight
+        type: string
+      instructions:
+        example: Keep your body straight and lower yourself until your chest almost
+          touches the ground.
+        type: string
+      name:
+        example: Push Up
+        type: string
+      target:
+        example: Chest
+        type: string
+      thumbnail:
+        $ref: '#/definitions/ImageDescription'
+    type: object
+  ExercisesResponse:
+    properties:
+      exercises:
+        items:
+          $ref: '#/definitions/Exercise'
+        type: array
+    type: object
+  ImageDescription:
+    properties:
+      height:
+        example: 100
+        type: integer
+      link:
+        example: https://example.com/image.jpg
+        type: string
+      width:
+        example: 100
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Kit
+    url: https://github.com/kit-g
+  description: A simple fitness tracker API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Heart of Yours API
+  version: "1.0"
+paths:
+  /exercises:
+    get:
+      consumes:
+      - application/json
+      description: Returns all exercises in a single page
+      operationId: getExercises
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ExercisesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all exercises
+      tags:
+      - workouts
+swagger: "2.0"
