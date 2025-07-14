@@ -33,7 +33,7 @@ func GetExercises(_ *gin.Context, _ string) (any, error) {
 	}
 
 	for i, e := range exercises {
-		response.Exercises[i] = models.NewExerciseOut(e)
+		response.Exercises[i] = models.NewExerciseOut(&e)
 	}
 
 	return response, nil
