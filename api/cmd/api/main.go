@@ -16,11 +16,14 @@ package main
 import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	_ "heart/docs"
 	"heart/internal/awsx"
 	"heart/internal/config"
 	"heart/internal/dbx"
 	"heart/internal/firebasex"
+	"heart/internal/models"
 	"heart/internal/routerx"
+
 	"log"
 	"os"
 )
@@ -52,12 +55,15 @@ func Init() {
 		return
 	}
 
-	//_ = dbx.DB.AutoMigrate(
-	//	&models.User{},
-	//	&models.Note{},
-	//	&models.NoteShare{},
-	//	&models.Attachment{},
-	//)
+	_ = dbx.DB.AutoMigrate(
+		&models.User{},
+		&models.Exercise{},
+		&models.Workout{},
+		&models.WorkoutExercise{},
+		&models.Set{},
+		&models.Template{},
+		&models.TemplateExercise{},
+	)
 }
 
 func main() {

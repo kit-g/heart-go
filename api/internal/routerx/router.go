@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"heart/internal/handlers"
 	"heart/internal/middleware"
 	"net/http"
 	"strings"
@@ -38,10 +39,9 @@ func Router(origins string) *gin.Engine {
 	authGroup.Use(middleware.AuthenticationMiddleware())
 	//authGroup.GET("/me", Authenticated(handlers.Me))
 
-	// notes
-	vaultGroup := r.Group("/notes")
-	vaultGroup.Use(middleware.AuthenticationMiddleware())
-	//vaultGroup.GET("", Authenticated(handlers.GetNotes))
+	exercisesGroup := r.Group("/exercises")
+	exercisesGroup.Use(middleware.AuthenticationMiddleware())
+	exercisesGroup.GET("", Authenticated(handlers.GetExercises))
 
 	return r
 }

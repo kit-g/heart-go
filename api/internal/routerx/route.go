@@ -2,13 +2,12 @@ package routerx
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"heart/internal/models"
 	"net/http"
 )
 
 type Handler func(c *gin.Context) (any, error)
-type AuthHandler func(c *gin.Context, userID uuid.UUID) (any, error)
+type AuthHandler func(c *gin.Context, userID string) (any, error)
 
 func Route(handler Handler) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -29,7 +28,7 @@ func Authenticated(handler AuthHandler) gin.HandlerFunc {
 			return
 		}
 
-		userID, ok := raw.(uuid.UUID)
+		userID, ok := raw.(string)
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "userID has invalid type"})
 			return

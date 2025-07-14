@@ -70,8 +70,3 @@ func DeleteObject(bucket string, key string) (*s3.DeleteObjectOutput, error) {
 	}
 	return S3.DeleteObject(&options)
 }
-
-func DeleteAttachment(attachmentId string) error {
-	_, err := DeleteObject(UploadBucket, attachmentId)
-	return err
-}
