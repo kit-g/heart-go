@@ -1,0 +1,28 @@
+package middleware
+
+import (
+	"github.com/gin-gonic/gin"
+	"heart/internal/firebasex"
+	"net/http"
+	"strings"
+)
+
+func AuthenticationMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		auth := c.GetHeader("Authorization")
+		if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing or invalid token"})
+			return
+		}
+
+		bearer := strings.TrimPrefix(auth, "Bearer ")
+		token, err := firebasex.VerifyIDToken(bearer)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			return
+		}
+
+		c.Set("userID", token.UID) // Save user ID to context
+		c.Next()
+	}
+}
