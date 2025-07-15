@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"heart/internal/dbx"
@@ -111,5 +112,19 @@ func MakeTemplate(c *gin.Context, userId string) (any, error) {
 //	@Router			/templates/{id} [delete]
 //	@Security		BearerAuth
 func DeleteTemplate(c *gin.Context, userId string) (any, error) {
-	return nil, nil
+	templateId := c.Param("templateId")
+
+	result := dbx.DB.
+		Where("id = ? AND user_id = ?", templateId, userId).
+		Delete(&models.Template{})
+
+	if result.Error != nil {
+		return nil, models.NewServerError(result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, models.NewNotFoundError("Template not found", errors.New("template not found"))
+	}
+
+	return models.NoContent, nil
 }
