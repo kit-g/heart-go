@@ -1,48 +1,63 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"heart/internal/dbx"
 	"heart/internal/models"
+	"strconv"
 )
 
+// GetWorkouts godoc
+//
+//	@Summary		Returns user workouts
+//	@Description	Returns paginated list of user workouts with exercises and sets
+//	@Tags			workouts
+//	@Accept			json
+//	@Produce		json
+//	@ID				getWorkouts
+//	@Param			pageSize	query		integer	false	"Page size for pagination"
+//	@Param			cursor		query		string	false	"Cursor for pagination"
+//	@Success		200			{object}	WorkoutResponse
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/workouts [get]
+//	@Security		BearerAuth
 func GetWorkouts(c *gin.Context, userId string) (any, error) {
-	//page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	//limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	//offset := (page - 1) * limit
-	//
-	//var workouts []models.Workout
-	//
-	//query := dbx.DB.
-	//	Model(&models.Workout{}).
-	//	Joins("JOIN users ON users.id = workouts.user_id").
-	//	Select("workouts.*").
-	//	Where("workouts.user_id = ?", userId).
-	//	Preload("Attachments").
-	//	Order("created_at desc").
-	//	Limit(limit).
-	//	Offset(offset)
-	//
-	//if err := query.Find(&workouts).Error; err != nil {
-	//	return nil, models.NewServerError(err)
-	//}
-	//
-	//var out []models.NoteOut
-	//total := 0
-	//
-	//for _, n := range workouts {
-	//	if total == 0 {
-	//		total = n.NotesCount
-	//	}
-	//	out = append(out, models.NewNoteOut(&n.Note))
-	//}
-	//
-	//return models.NotesResponse{
-	//	Notes: out,
-	//	Total: total,
-	//}, nil
-	return nil, nil
+	pageSize := 10 // default page size
+	if size := c.Query("pageSize"); size != "" {
+		if parsed, err := strconv.Atoi(size); err == nil && parsed > 0 {
+			pageSize = parsed
+		}
+	}
+
+	var workouts []models.Workout
+	query := dbx.DB.
+		Preload("Exercises.Sets").
+		Preload("Exercises.Exercise").
+		Where("user_id = ?", userId).
+		Order("id desc").
+		Limit(pageSize)
+
+	if cursor := c.Query("cursor"); cursor != "" {
+		query = query.Where("id < ?", cursor)
+	}
+
+	if err := query.Find(&workouts).Error; err != nil {
+		return nil, models.NewServerError(err)
+	}
+
+	var nextCursor string
+	if len(workouts) == pageSize {
+		nextCursor = workouts[len(workouts)-1].ID.String()
+	}
+
+	return models.WorkoutResponse{
+		Workouts: models.NewWorkoutsArray(workouts),
+		Cursor:   nextCursor,
+	}, nil
 }
 
 func GetWorkout(_ *gin.Context, _ string) (any, error) {

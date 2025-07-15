@@ -68,12 +68,14 @@ type NotFoundError struct {
 }
 
 func NewServerError(err error) *ServerError {
-	return &ServerError{&baseError{
-		Err:     err,
-		status:  500,
-		code:    "ServerError",
-		message: "Internal server error",
-	}}
+	return &ServerError{
+		&baseError{
+			Err:     err,
+			status:  500,
+			code:    "ServerError",
+			message: "Internal server error",
+		},
+	}
 }
 
 func NewValidationError(err error) *ValidationError {

@@ -113,13 +113,13 @@ type SetIn struct {
 	Reps      int     `json:"reps,omitempty" example:"10"`
 	Duration  float64 `json:"duration,omitempty" example:"10"`
 	Distance  float64 `json:"distance,omitempty" example:"10"`
-}
+} // @name SetIn
 
 type WorkoutExerciseIn struct {
 	Exercise string  `json:"exercise" binding:"required" example:"Push Up"`
 	Sets     []SetIn `json:"sets"`
 	Order    int     `json:"order" example:"1"`
-}
+} // @name WorkoutExerciseIn
 
 type WorkoutIn struct {
 	ID        string              `json:"id" binding:"required" example:"2zsp6iMWgOx9n6qQxZm0GmeXog1"`
@@ -238,4 +238,13 @@ type ExercisesResponse struct {
 
 type WorkoutResponse struct {
 	Workouts []WorkoutOut `json:"workouts"`
+	Cursor   string       `json:"cursor"`
 } // @name WorkoutResponse
+
+func NewWorkoutsArray(workouts []Workout) []WorkoutOut {
+	workoutsOut := make([]WorkoutOut, len(workouts))
+	for i, w := range workouts {
+		workoutsOut[i] = NewWorkoutOut(&w)
+	}
+	return workoutsOut
+}
