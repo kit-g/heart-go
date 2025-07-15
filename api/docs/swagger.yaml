@@ -277,6 +277,42 @@ paths:
       summary: Creates an account record
       tags:
       - accounts
+  /accounts/{accountId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns user account information for the authenticated user
+      operationId: getAccount
+      parameters:
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user account
+      tags:
+      - accounts
   /exercises:
     get:
       consumes:
