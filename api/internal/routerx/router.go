@@ -31,14 +31,6 @@ func Router(origins string) *gin.Engine {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Public routes
-	//r.POST("/refresh", Route(handlers.Refresh))
-
-	// Protected routes
-	authGroup := r.Group("/")
-	authGroup.Use(middleware.AuthenticationMiddleware())
-	//authGroup.GET("/me", Authenticated(handlers.Me))
-
 	exercisesGroup := r.Group("/exercises")
 	exercisesGroup.Use(middleware.AuthenticationMiddleware())
 	exercisesGroup.GET("", Authenticated(handlers.GetExercises))
@@ -56,6 +48,14 @@ func Router(origins string) *gin.Engine {
 	templatesGroup.POST("", Authenticated(handlers.MakeTemplate))
 	templatesGroup.GET(":templateId", Authenticated(handlers.GetTemplate))
 	templatesGroup.DELETE(":templateId", Authenticated(handlers.DeleteTemplate))
+
+	accountGroup := r.Group("/accounts")
+	accountGroup.Use(middleware.AuthenticationMiddleware())
+	accountGroup.POST("", Authenticated(handlers.RegisterAccount))
+	accountGroup.GET(":accountId", Authenticated(handlers.GetAccount))
+	accountGroup.DELETE(":accountId", Authenticated(handlers.DeleteAccount))
+	accountGroup.PUT(":accountId", Authenticated(handlers.EditAccount))
+
 	return r
 }
 
