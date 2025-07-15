@@ -73,6 +73,57 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Schedules account deletion for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Delete user account",
+                "operationId": "deleteAccount",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/accounts/{accountId}": {
@@ -781,6 +832,9 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
+                "accountDeletionSchedule": {
+                    "type": "string"
+                },
                 "avatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.png"
@@ -800,6 +854,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "HW4beTVvbTUPRxun9MXZxwKPjmC2"
+                },
+                "scheduledForDeletionAt": {
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string",

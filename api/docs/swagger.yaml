@@ -132,6 +132,8 @@ definitions:
     type: object
   User:
     properties:
+      accountDeletionSchedule:
+        type: string
       avatar:
         example: https://example.com/avatar.png
         type: string
@@ -146,6 +148,8 @@ definitions:
         type: string
       id:
         example: HW4beTVvbTUPRxun9MXZxwKPjmC2
+        type: string
+      scheduledForDeletionAt:
         type: string
       updatedAt:
         example: "2025-07-15T12:11:54.450476-04:00"
@@ -245,6 +249,39 @@ info:
   version: "1.0"
 paths:
   /accounts:
+    delete:
+      consumes:
+      - application/json
+      description: Schedules account deletion for the authenticated user
+      operationId: deleteAccount
+      parameters:
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete user account
+      tags:
+      - accounts
     post:
       consumes:
       - application/json
