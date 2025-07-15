@@ -50,8 +50,8 @@ func Init() {
 		return
 	}
 
-	if err := awsx.InitS3(cfg.UploadBucket, cfg.AwsRegion); err != nil {
-		log.Fatal("Failed to initialize S3 client:", err)
+	if err := awsx.Init(cfg.AwsConfig); err != nil {
+		log.Fatal("Failed to initialize AWS clients:", err)
 		return
 	}
 

@@ -17,9 +17,25 @@ type DBConfig struct {
 	AppName    string `env:"APP_NAME" default:"heart-api"`
 }
 
-type AwsConfig struct {
-	AwsRegion    string `env:"REGION" required:"true"`
+type SchedulerConfig struct {
+	ScheduleGroup string `env:"SCHEDULE_GROUP" required:"true"`
+}
+
+type S3Config struct {
 	UploadBucket string `env:"UPLOAD_BUCKET" required:"true"`
+}
+
+type LambdaConfig struct {
+	BackgroundFunctionArn  string `env:"BACKGROUND_FUNCTION" required:"true"`
+	BackgroundFunctionRole string `env:"BACKGROUND_ROLE" required:"true"`
+}
+
+type AwsConfig struct {
+	SchedulerConfig
+	S3Config
+	LambdaConfig
+	AwsRegion             string `env:"REGION" required:"true"`
+	AccountDeletionOffset int    `env:"ACCOUNT_DELETION_OFFSET" default:"30" required:"true"`
 }
 
 type SentryConfig struct {
