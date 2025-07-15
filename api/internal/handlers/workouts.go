@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"heart/internal/dbx"
@@ -110,7 +109,7 @@ func GetWorkout(c *gin.Context, userId string) (any, error) {
 func MakeWorkout(c *gin.Context, userID string) (any, error) {
 	var workoutIn models.WorkoutIn
 	if err := c.BindJSON(&workoutIn); err != nil {
-		return nil, fmt.Errorf("invalid request body: %w", err)
+		return nil, models.NewValidationError(err)
 	}
 
 	workout := models.NewWorkout(&workoutIn, userID)
