@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"heart/internal/awsx"
+	"heart/internal/config"
 	"heart/internal/dbx"
 	"heart/internal/models"
 )
@@ -68,6 +69,40 @@ func RegisterAccount(c *gin.Context, userId string) (any, error) {
 }
 
 func EditAccount(c *gin.Context, userId string) (any, error) {
+	var request models.EditAccountRequest
+	if err := c.BindJSON(&request); err != nil {
+		return nil, models.NewValidationError(err)
+	}
+
+	switch request.Action {
+	case "undoAccountDeletion":
+
+	case "removeAvatar":
+	case "uploadAvatar":
+		var mimeType string
+		if request.MimeType == nil || *request.MimeType == "" {
+			mimeType = defaultMimeType
+		} else {
+			mimeType = *request.MimeType
+		}
+
+		response, err := awsx.GeneratePresignedPostURL(
+			c.Request.Context(),
+			config.App.UploadBucket,
+			fmt.Sprintf("avatars/%s", userId),
+			mimeType,
+			config.App.UploadDestinationTag(),
+		)
+
+		if err != nil {
+			return nil, models.NewServerError(err)
+		}
+
+		return models.PresignedUrlResponse{
+			URL:    response.URL,
+			Fields: response.Values,
+		}, nil
+	}
 	return nil, nil
 }
 
@@ -110,3 +145,5 @@ func DeleteAccount(c *gin.Context, userId string) (any, error) {
 
 	return models.NoContent, nil
 }
+
+const defaultMimeType = "image/png"

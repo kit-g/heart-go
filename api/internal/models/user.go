@@ -18,3 +18,13 @@ type User struct {
 func (u User) String() string {
 	return fmt.Sprintf("%s, #%d", u.Username, u.ID)
 }
+
+type EditAccountRequest struct {
+	Action   string  `json:"action" example:"removeAvatar" binding:"required"`
+	MimeType *string `json:"mimeType,omitempty" example:"image/png"`
+} // @name EditAccountRequest
+
+type PresignedUrlResponse struct {
+	URL    string            `json:"url"`
+	Fields map[string]string `json:"fields"`
+} // @name PresignedUrlResponse

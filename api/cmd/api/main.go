@@ -28,29 +28,27 @@ import (
 	"os"
 )
 
-var cfg *config.AppConfig
-
 func Init() {
 	var err error
-	cfg, err = config.NewAppConfig()
+	config.App, err = config.NewAppConfig()
 
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 		return
 	}
 
-	if cfg.FirebaseConfig.Credentials != "" {
-		if err := firebasex.Init(cfg.FirebaseConfig.Credentials); err != nil {
+	if config.App.Credentials != "" {
+		if err := firebasex.Init(config.App.Credentials); err != nil {
 			log.Fatal("Failed to initialize Firebase client:", err)
 		}
 	}
 
-	if err := dbx.Connect(&cfg.DBConfig); err != nil {
+	if err := dbx.Connect(&config.App.DBConfig); err != nil {
 		log.Fatal("Failed to connect to DB:", err)
 		return
 	}
 
-	if err := awsx.Init(cfg.AwsConfig); err != nil {
+	if err := awsx.Init(config.App.AwsConfig); err != nil {
 		log.Fatal("Failed to initialize AWS clients:", err)
 		return
 	}
@@ -68,7 +66,7 @@ func Init() {
 func main() {
 	Init()
 
-	r := routerx.Router(cfg.CORSOrigins)
+	r := routerx.Router(config.App.CORSOrigins)
 
 	mode := os.Getenv("MODE")
 

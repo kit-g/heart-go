@@ -9,17 +9,6 @@ import (
 type Handler func(c *gin.Context) (any, error)
 type AuthHandler func(c *gin.Context, userID string) (any, error)
 
-func Route(handler Handler) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		runHandler(
-			c,
-			func() (any, error) {
-				return handler(c)
-			},
-		)
-	}
-}
-
 func Authenticated(handler AuthHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		raw, exists := c.Get("userID")
