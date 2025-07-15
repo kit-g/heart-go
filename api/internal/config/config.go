@@ -23,6 +23,14 @@ type SchedulerConfig struct {
 
 type S3Config struct {
 	UploadBucket string `env:"UPLOAD_BUCKET" required:"true"`
+	MediaBucket  string `env:"MEDIA_BUCKET" required:"true"`
+}
+
+func (c *S3Config) UploadDestinationTag() string {
+	return fmt.Sprintf(
+		`<Tagging><TagSet><Tag><Key>destination</Key><Value>%s</Value></Tag></TagSet></Tagging>`,
+		c.MediaBucket,
+	)
 }
 
 type LambdaConfig struct {
