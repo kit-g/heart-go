@@ -60,8 +60,37 @@ func GetWorkouts(c *gin.Context, userId string) (any, error) {
 	}, nil
 }
 
-func GetWorkout(_ *gin.Context, _ string) (any, error) {
-	return nil, nil
+// GetWorkout godoc
+//
+//	@Summary		Returns a workout
+//	@Description	Returns a single workout by ID with exercises and sets
+//	@Tags			workouts
+//	@Accept			json
+//	@Produce		json
+//	@ID				getWorkout
+//	@Param			workoutId	path		string	true	"Workout ID"
+//	@Success		200			{object}	Workout
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404			{object}	ErrorResponse	"Not Found"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/workouts/{workoutId} [get]
+//	@Security		BearerAuth
+func GetWorkout(c *gin.Context, userId string) (any, error) {
+	workoutId := c.Param("workoutId")
+
+	var workout models.Workout
+	if err := dbx.DB.
+		Preload("Exercises.Sets").
+		Preload("Exercises.Exercise").
+		Where("id = ? AND user_id = ?", workoutId, userId).
+		First(&workout).Error; err != nil {
+		if models.Is(err, gorm.ErrRecordNotFound) {
+			return nil, models.NewNotFoundError("Workout not found", err)
+		}
+		return nil, models.NewServerError(err)
+	}
+
+	return models.NewWorkoutOut(&workout), nil
 }
 
 // MakeWorkout godoc
@@ -93,6 +122,35 @@ func MakeWorkout(c *gin.Context, userID string) (any, error) {
 	return models.NewWorkoutOut(&workout), nil
 }
 
-func DeleteWorkout(_ *gin.Context, _ string) (any, error) {
-	return nil, nil
+// DeleteWorkout godoc
+//
+//	@Summary		Deletes a workout
+//	@Description	Deletes a workout by ID
+//	@Tags			workouts
+//	@Accept			json
+//	@Produce		json
+//	@ID				deleteWorkout
+//	@Param			workoutId	path		string	true	"Workout ID"
+//	@Success		204		"No Content"
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404			{object}	ErrorResponse	"Not Found"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/workouts/{workoutId} [delete]
+//	@Security		BearerAuth
+func DeleteWorkout(c *gin.Context, userId string) (any, error) {
+	workoutId := c.Param("workoutId")
+
+	result := dbx.DB.
+		Where("id = ? AND user_id = ?", workoutId, userId).
+		Delete(&models.Workout{})
+
+	if result.Error != nil {
+		return nil, models.NewServerError(result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, models.NewNotFoundError("Workout not found", errors.New("workout not found"))
+	}
+
+	return models.NoContent, nil
 }
