@@ -6,10 +6,49 @@ import (
 	"heart/internal/models"
 )
 
-func GetTemplates(c *gin.Context, userId string) (any, error) {
-	return nil, nil
+// GetTemplates godoc
+//
+//	@Summary		Lists workout templates
+//	@Description	Returns all workout templates for the authenticated user
+//	@Tags			templates
+//	@Accept			json
+//	@Produce		json
+//	@ID				getTemplates
+//	@Success		200	{array}		Template
+//	@Failure		401	{object}	ErrorResponse	"Unauthorized"
+//	@Failure		500	{object}	ErrorResponse	"Server error"
+//	@Router			/templates [get]
+//	@Security		BearerAuth
+func GetTemplates(_ *gin.Context, userId string) (any, error) {
+	var templates []models.Template
+	query := dbx.DB.
+		Where("user_id = ?", userId).
+		Order("id desc")
+
+	if err := query.Find(&templates).Error; err != nil {
+		return nil, models.NewServerError(err)
+	}
+
+	return models.TemplateResponse{
+		Templates: models.NewTemplateArray(templates),
+	}, nil
 }
 
+// GetTemplate godoc
+//
+//	@Summary		Get workout template
+//	@Description	Returns a specific workout template by ID
+//	@Tags			templates
+//	@Accept			json
+//	@Produce		json
+//	@ID				getTemplate
+//	@Param			id	path		string	true	"Template ID"
+//	@Success		200	{object}	Template
+//	@Failure		401	{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404	{object}	ErrorResponse	"Not Found"
+//	@Failure		500	{object}	ErrorResponse	"Server error"
+//	@Router			/templates/{id} [get]
+//	@Security		BearerAuth
 func GetTemplate(c *gin.Context, userId string) (any, error) {
 	return nil, nil
 }
@@ -43,6 +82,21 @@ func MakeTemplate(c *gin.Context, userId string) (any, error) {
 	return models.NewTemplateOut(&created), nil
 }
 
+// DeleteTemplate godoc
+//
+//	@Summary		Delete workout template
+//	@Description	Deletes a specific workout template by ID
+//	@Tags			templates
+//	@Accept			json
+//	@Produce		json
+//	@ID				deleteTemplate
+//	@Param			id	path	string	true	"Template ID"
+//	@Success		204	"No Content"
+//	@Failure		401	{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404	{object}	ErrorResponse	"Not Found"
+//	@Failure		500	{object}	ErrorResponse	"Server error"
+//	@Router			/templates/{id} [delete]
+//	@Security		BearerAuth
 func DeleteTemplate(c *gin.Context, userId string) (any, error) {
 	return nil, nil
 }

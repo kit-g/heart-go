@@ -44,3 +44,15 @@ func NewTemplateOut(t *Template) TemplateOut {
 		Exercises: t.Exercises,
 	}
 }
+
+type TemplateResponse struct {
+	Templates []TemplateOut `json:"templates"`
+}
+
+func NewTemplateArray(templates []Template) []TemplateOut {
+	out := make([]TemplateOut, len(templates))
+	for i, t := range templates {
+		out[i] = NewTemplateOut(&t)
+	}
+	return out
+}
