@@ -26,10 +26,10 @@ func (e *Exercise) String() string {
 
 type Workout struct {
 	SoftDeleteModel
-	Start     time.Time         `gorm:"not null"`
-	End       time.Time         `gorm:"not null"`
+	Start     time.Time `gorm:"not null"`
+	End       time.Time
 	UserID    string            `gorm:"type:text;index"`
-	User      User              `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
+	User      User              `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	Name      string            `gorm:"type:text"`
 	Exercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
