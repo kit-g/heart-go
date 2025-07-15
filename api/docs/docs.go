@@ -23,6 +23,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/accounts": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Accounts are managed by Firebase so we just need to store them",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Creates an account record",
+                "operationId": "registerAccount",
+                "parameters": [
+                    {
+                        "description": "User request",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/exercises": {
             "get": {
                 "security": [
@@ -662,6 +714,40 @@ const docTemplate = `{
                 },
                 "order": {
                     "type": "integer"
+                }
+            }
+        },
+        "User": {
+            "type": "object",
+            "required": [
+                "displayName",
+                "email",
+                "id"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.png"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2025-07-12T12:11:54.450476-04:00"
+                },
+                "displayName": {
+                    "type": "string",
+                    "example": "jane_doe"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jane_doe@mail.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "HW4beTVvbTUPRxun9MXZxwKPjmC2"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2025-07-15T12:11:54.450476-04:00"
                 }
             }
         },

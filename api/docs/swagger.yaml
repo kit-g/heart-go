@@ -130,6 +130,31 @@ definitions:
       order:
         type: integer
     type: object
+  User:
+    properties:
+      avatar:
+        example: https://example.com/avatar.png
+        type: string
+      createdAt:
+        example: "2025-07-12T12:11:54.450476-04:00"
+        type: string
+      displayName:
+        example: jane_doe
+        type: string
+      email:
+        example: jane_doe@mail.com
+        type: string
+      id:
+        example: HW4beTVvbTUPRxun9MXZxwKPjmC2
+        type: string
+      updatedAt:
+        example: "2025-07-15T12:11:54.450476-04:00"
+        type: string
+    required:
+    - displayName
+    - email
+    - id
+    type: object
   Workout:
     properties:
       end:
@@ -219,6 +244,39 @@ info:
   title: Heart of Yours API
   version: "1.0"
 paths:
+  /accounts:
+    post:
+      consumes:
+      - application/json
+      description: Accounts are managed by Firebase so we just need to store them
+      operationId: registerAccount
+      parameters:
+      - description: User request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Creates an account record
+      tags:
+      - accounts
   /exercises:
     get:
       consumes:
