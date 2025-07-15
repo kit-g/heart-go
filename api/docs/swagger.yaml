@@ -92,6 +92,39 @@ definitions:
     required:
     - completed
     type: object
+  Template:
+    properties:
+      exercises:
+        items:
+          $ref: '#/definitions/WorkoutExercise'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+    type: object
+  TemplateExerciseIn:
+    properties:
+      exercise:
+        type: string
+      sets:
+        items:
+          $ref: '#/definitions/SetIn'
+        type: array
+    type: object
+  TemplateIn:
+    properties:
+      exercises:
+        items:
+          $ref: '#/definitions/TemplateExerciseIn'
+        type: array
+      name:
+        type: string
+      order:
+        type: integer
+    type: object
   Workout:
     properties:
       end:
@@ -207,6 +240,39 @@ paths:
       summary: List all exercises
       tags:
       - workouts
+  /templates:
+    post:
+      consumes:
+      - application/json
+      description: Validates, saves and returns a workout template
+      operationId: makeTemplate
+      parameters:
+      - description: Template request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/TemplateIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Template'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Creates a workout template
+      tags:
+      - templates
   /workouts:
     get:
       consumes:

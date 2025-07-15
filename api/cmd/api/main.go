@@ -62,7 +62,6 @@ func Init() {
 		&models.WorkoutExercise{},
 		&models.Set{},
 		&models.Template{},
-		&models.TemplateExercise{},
 	)
 }
 

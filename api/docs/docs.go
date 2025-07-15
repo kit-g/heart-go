@@ -64,6 +64,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/templates": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Validates, saves and returns a workout template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "templates"
+                ],
+                "summary": "Creates a workout template",
+                "operationId": "makeTemplate",
+                "parameters": [
+                    {
+                        "description": "Template request",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TemplateIn"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Template"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts": {
             "get": {
                 "security": [
@@ -404,6 +456,57 @@ const docTemplate = `{
                 "weight": {
                     "type": "number",
                     "example": 100
+                }
+            }
+        },
+        "Template": {
+            "type": "object",
+            "properties": {
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkoutExercise"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "TemplateExerciseIn": {
+            "type": "object",
+            "properties": {
+                "exercise": {
+                    "type": "string"
+                },
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SetIn"
+                    }
+                }
+            }
+        },
+        "TemplateIn": {
+            "type": "object",
+            "properties": {
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TemplateExerciseIn"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
                 }
             }
         },
