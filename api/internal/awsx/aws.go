@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/scheduler"
 	"github.com/aws/aws-sdk-go-v2/service/scheduler/types"
-
 	env "heart/internal/config"
 	"time"
 )
@@ -40,11 +39,18 @@ func Init(c env.AwsConfig) error {
 	return nil
 }
 
-func GeneratePresignedPostURL(ctx context.Context, bucket string, key string, contentType string) (*s3.PresignedPostRequest, error) {
+func GeneratePresignedPostURL(
+	ctx context.Context,
+	bucket string,
+	key string,
+	contentType string,
+	tagging string,
+) (*s3.PresignedPostRequest, error) {
 	input := s3.PutObjectInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(key),
 		ContentType: aws.String(contentType),
+		// Don't set Tagging here - we'll handle it manually
 	}
 
 	request, err := s3Signer.PresignPostObject(
@@ -52,11 +58,23 @@ func GeneratePresignedPostURL(ctx context.Context, bucket string, key string, co
 		&input,
 		func(options *s3.PresignPostOptions) {
 			options.Expires = 15 * time.Minute
+			options.Conditions = []interface{}{
+				[]interface{}{"content-length-range", minContentLength, maxContentLength},
+				map[string]string{"Content-Type": contentType},
+				map[string]string{"tagging": tagging},
+			}
 		},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign request: %w", err)
 	}
+
+	if request.Values == nil {
+		request.Values = make(map[string]string)
+	}
+	request.Values["tagging"] = tagging
+	request.Values["Content-Type"] = contentType
+
 	return request, nil
 }
 
@@ -114,3 +132,8 @@ func CreateAccountDeletionSchedule(ctx context.Context, userId string) (*time.Ti
 
 	return &when, out.ScheduleArn, nil
 }
+
+const (
+	minContentLength = 128
+	maxContentLength = 31_457_280 // 30 MB max
+)
