@@ -618,13 +618,16 @@ const docTemplate = `{
                     }
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2ztgx4cIWnxtt95klKnYGGtIfb1"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Legs \u0026 Shoulders"
                 },
                 "order": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -771,13 +774,6 @@ const docTemplate = `{
                     }
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }`

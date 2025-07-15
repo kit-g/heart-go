@@ -30,9 +30,9 @@ func NewTemplate(t *TemplateIn, userId string) Template {
 }
 
 type TemplateOut struct {
-	ID        string             `json:"id"`
-	Name      string             `json:"name"`
-	Order     int                `json:"order"`
+	ID        string             `json:"id" example:"2ztgx4cIWnxtt95klKnYGGtIfb1"`
+	Name      string             `json:"name" example:"Legs & Shoulders"`
+	Order     int                `json:"order" example:"1"`
 	Exercises []TemplateExercise `json:"exercises"`
 } // @name Template
 

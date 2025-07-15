@@ -99,10 +99,13 @@ definitions:
           $ref: '#/definitions/TemplateExercise'
         type: array
       id:
+        example: 2ztgx4cIWnxtt95klKnYGGtIfb1
         type: string
       name:
+        example: Legs & Shoulders
         type: string
       order:
+        example: 1
         type: integer
     type: object
   TemplateExercise:
@@ -507,9 +510,4 @@ paths:
       summary: Returns a workout
       tags:
       - workouts
-securityDefinitions:
-  BearerAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"
