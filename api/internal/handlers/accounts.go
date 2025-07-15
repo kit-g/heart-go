@@ -7,8 +7,32 @@ import (
 	"heart/internal/models"
 )
 
-func GetAccount(c *gin.Context, userId string) (any, error) {
-	return nil, nil
+// GetAccount godoc
+//
+//	@Summary		Get user account
+//	@Description	Returns user account information for the authenticated user
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@ID				getAccount
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Success		200			{object}	User
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404			{object}	ErrorResponse	"Not Found"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/accounts/{accountId} [get]
+//	@Security		BearerAuth
+func GetAccount(_ *gin.Context, userId string) (any, error) {
+	var user models.User
+
+	if err := dbx.DB.
+		Where("firebase_uid = ?", userId).
+		First(&user).
+		Error; err != nil {
+		return nil, models.NewServerError(err)
+	}
+
+	return user, nil
 }
 
 // RegisterAccount godoc
