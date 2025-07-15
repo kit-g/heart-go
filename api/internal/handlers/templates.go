@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"heart/internal/dbx"
 	"heart/internal/models"
 )
@@ -50,7 +51,19 @@ func GetTemplates(_ *gin.Context, userId string) (any, error) {
 //	@Router			/templates/{id} [get]
 //	@Security		BearerAuth
 func GetTemplate(c *gin.Context, userId string) (any, error) {
-	return nil, nil
+	templateId := c.Param("templateId")
+
+	var template models.Template
+	if err := dbx.DB.
+		Where("id = ? AND user_id = ?", templateId, userId).
+		First(&template).Error; err != nil {
+		if models.Is(err, gorm.ErrRecordNotFound) {
+			return nil, models.NewNotFoundError("Template not found", err)
+		}
+		return nil, models.NewServerError(err)
+	}
+
+	return models.NewTemplateOut(&template), nil
 }
 
 // MakeTemplate godoc
