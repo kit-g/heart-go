@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"heart/internal/awsx"
 	"heart/internal/dbx"
 	"heart/internal/models"
 )
@@ -70,6 +71,42 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 	return nil, nil
 }
 
+// DeleteAccount godoc
+//
+//	@Summary		Delete user account
+//	@Description	Schedules account deletion for the authenticated user
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@ID				deleteAccount
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Success		204			"No Content"
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		404			{object}	ErrorResponse	"Not Found"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/accounts [delete]
+//	@Security		BearerAuth
 func DeleteAccount(c *gin.Context, userId string) (any, error) {
-	return nil, nil
+	when, schedule, err := awsx.CreateAccountDeletionSchedule(c.Request.Context(), userId)
+
+	if err != nil {
+		return nil, models.NewServerError(err)
+	}
+
+	if when != nil && schedule != nil {
+		columns := map[string]interface{}{
+			"account_deletion_schedule": schedule,
+			"scheduled_for_deletion_at": when,
+		}
+
+		if err := dbx.DB.
+			Model(&models.User{}).
+			Where("firebase_uid = ?", userId).
+			Updates(columns).
+			Error; err != nil {
+			return nil, models.NewServerError(err)
+		}
+	}
+
+	return models.NoContent, nil
 }

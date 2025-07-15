@@ -52,9 +52,9 @@ func Router(origins string) *gin.Engine {
 	accountGroup := r.Group("/accounts")
 	accountGroup.Use(middleware.AuthenticationMiddleware())
 	accountGroup.POST("", Authenticated(handlers.RegisterAccount))
-	accountGroup.GET(":accountId", Authenticated(handlers.GetAccount))
-	accountGroup.DELETE(":accountId", Authenticated(handlers.DeleteAccount))
+	accountGroup.DELETE("", Authenticated(handlers.DeleteAccount))
 	accountGroup.PUT(":accountId", Authenticated(handlers.EditAccount))
+	accountGroup.GET(":accountId", Authenticated(handlers.GetAccount))
 
 	return r
 }
