@@ -96,7 +96,7 @@ definitions:
     properties:
       exercises:
         items:
-          $ref: '#/definitions/WorkoutExercise'
+          $ref: '#/definitions/TemplateExercise'
         type: array
       id:
         type: string
@@ -105,10 +105,12 @@ definitions:
       order:
         type: integer
     type: object
-  TemplateExerciseIn:
+  TemplateExercise:
     properties:
       exercise:
         type: string
+      order:
+        type: integer
       sets:
         items:
           $ref: '#/definitions/SetIn'
@@ -118,7 +120,7 @@ definitions:
     properties:
       exercises:
         items:
-          $ref: '#/definitions/TemplateExerciseIn'
+          $ref: '#/definitions/TemplateExercise'
         type: array
       name:
         type: string
@@ -241,6 +243,33 @@ paths:
       tags:
       - workouts
   /templates:
+    get:
+      consumes:
+      - application/json
+      description: Returns all workout templates for the authenticated user
+      operationId: getTemplates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Template'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Lists workout templates
+      tags:
+      - templates
     post:
       consumes:
       - application/json
@@ -271,6 +300,75 @@ paths:
       security:
       - BearerAuth: []
       summary: Creates a workout template
+      tags:
+      - templates
+  /templates/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific workout template by ID
+      operationId: deleteTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete workout template
+      tags:
+      - templates
+    get:
+      consumes:
+      - application/json
+      description: Returns a specific workout template by ID
+      operationId: getTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Template'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get workout template
       tags:
       - templates
   /workouts:
@@ -409,4 +507,9 @@ paths:
       summary: Returns a workout
       tags:
       - workouts
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
