@@ -72,6 +72,26 @@ definitions:
     - completed
     - id
     type: object
+  SetIn:
+    properties:
+      completed:
+        example: true
+        type: boolean
+      distance:
+        example: 10
+        type: number
+      duration:
+        example: 10
+        type: number
+      reps:
+        example: 10
+        type: integer
+      weight:
+        example: 100
+        type: number
+    required:
+    - completed
+    type: object
   Workout:
     properties:
       end:
@@ -101,6 +121,21 @@ definitions:
           $ref: '#/definitions/Set'
         type: array
     type: object
+  WorkoutExerciseIn:
+    properties:
+      exercise:
+        example: Push Up
+        type: string
+      order:
+        example: 1
+        type: integer
+      sets:
+        items:
+          $ref: '#/definitions/SetIn'
+        type: array
+    required:
+    - exercise
+    type: object
   WorkoutIn:
     properties:
       end:
@@ -108,7 +143,7 @@ definitions:
         type: string
       exercises:
         items:
-          $ref: '#/definitions/models.WorkoutExerciseIn'
+          $ref: '#/definitions/WorkoutExerciseIn'
         type: array
       id:
         example: 2zsp6iMWgOx9n6qQxZm0GmeXog1
@@ -124,40 +159,14 @@ definitions:
     - id
     - start
     type: object
-  models.SetIn:
+  WorkoutResponse:
     properties:
-      completed:
-        example: true
-        type: boolean
-      distance:
-        example: 10
-        type: number
-      duration:
-        example: 10
-        type: number
-      reps:
-        example: 10
-        type: integer
-      weight:
-        example: 100
-        type: number
-    required:
-    - completed
-    type: object
-  models.WorkoutExerciseIn:
-    properties:
-      exercise:
-        example: Push Up
+      cursor:
         type: string
-      order:
-        example: 1
-        type: integer
-      sets:
+      workouts:
         items:
-          $ref: '#/definitions/models.SetIn'
+          $ref: '#/definitions/Workout'
         type: array
-    required:
-    - exercise
     type: object
 host: localhost:8080
 info:
@@ -199,6 +208,40 @@ paths:
       tags:
       - workouts
   /workouts:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user workouts with exercises and sets
+      operationId: getWorkouts
+      parameters:
+      - description: Page size for pagination
+        in: query
+        name: pageSize
+        type: integer
+      - description: Cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkoutResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Returns user workouts
+      tags:
+      - workouts
     post:
       consumes:
       - application/json
@@ -229,6 +272,75 @@ paths:
       security:
       - BearerAuth: []
       summary: Creates a workout
+      tags:
+      - workouts
+  /workouts/{workoutId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a workout by ID
+      operationId: deleteWorkout
+      parameters:
+      - description: Workout ID
+        in: path
+        name: workoutId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletes a workout
+      tags:
+      - workouts
+    get:
+      consumes:
+      - application/json
+      description: Returns a single workout by ID with exercises and sets
+      operationId: getWorkout
+      parameters:
+      - description: Workout ID
+        in: path
+        name: workoutId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Workout'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Returns a workout
       tags:
       - workouts
 swagger: "2.0"

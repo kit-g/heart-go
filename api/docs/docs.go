@@ -65,6 +65,59 @@ const docTemplate = `{
             }
         },
         "/workouts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns paginated list of user workouts with exercises and sets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workouts"
+                ],
+                "summary": "Returns user workouts",
+                "operationId": "getWorkouts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size for pagination",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cursor for pagination",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/WorkoutResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -103,6 +156,113 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/{workoutId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single workout by ID with exercises and sets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workouts"
+                ],
+                "summary": "Returns a workout",
+                "operationId": "getWorkout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workout ID",
+                        "name": "workoutId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Workout"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a workout by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workouts"
+                ],
+                "summary": "Deletes a workout",
+                "operationId": "deleteWorkout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workout ID",
+                        "name": "workoutId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ErrorResponse"
                         }
@@ -219,6 +379,34 @@ const docTemplate = `{
                 }
             }
         },
+        "SetIn": {
+            "type": "object",
+            "required": [
+                "completed"
+            ],
+            "properties": {
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "distance": {
+                    "type": "number",
+                    "example": 10
+                },
+                "duration": {
+                    "type": "number",
+                    "example": 10
+                },
+                "reps": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 100
+                }
+            }
+        },
         "Workout": {
             "type": "object",
             "properties": {
@@ -261,67 +449,7 @@ const docTemplate = `{
                 }
             }
         },
-        "WorkoutIn": {
-            "type": "object",
-            "required": [
-                "exercises",
-                "id",
-                "start"
-            ],
-            "properties": {
-                "end": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
-                },
-                "exercises": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.WorkoutExerciseIn"
-                    }
-                },
-                "id": {
-                    "type": "string",
-                    "example": "2zsp6iMWgOx9n6qQxZm0GmeXog1"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Legs"
-                },
-                "start": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
-                }
-            }
-        },
-        "models.SetIn": {
-            "type": "object",
-            "required": [
-                "completed"
-            ],
-            "properties": {
-                "completed": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "distance": {
-                    "type": "number",
-                    "example": 10
-                },
-                "duration": {
-                    "type": "number",
-                    "example": 10
-                },
-                "reps": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "weight": {
-                    "type": "number",
-                    "example": 100
-                }
-            }
-        },
-        "models.WorkoutExerciseIn": {
+        "WorkoutExerciseIn": {
             "type": "object",
             "required": [
                 "exercise"
@@ -338,7 +466,53 @@ const docTemplate = `{
                 "sets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.SetIn"
+                        "$ref": "#/definitions/SetIn"
+                    }
+                }
+            }
+        },
+        "WorkoutIn": {
+            "type": "object",
+            "required": [
+                "exercises",
+                "id",
+                "start"
+            ],
+            "properties": {
+                "end": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkoutExerciseIn"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "2zsp6iMWgOx9n6qQxZm0GmeXog1"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Legs"
+                },
+                "start": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "WorkoutResponse": {
+            "type": "object",
+            "properties": {
+                "cursor": {
+                    "type": "string"
+                },
+                "workouts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Workout"
                     }
                 }
             }
