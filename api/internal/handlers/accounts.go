@@ -78,7 +78,7 @@ func RegisterAccount(c *gin.Context, userId string) (any, error) {
 //	@Accept			json
 //	@Produce		json
 //	@ID				editAccount
-//	@Param			accountId	path		string	true	"Account ID"
+//	@Param			accountId	path		string				true	"Account ID"
 //	@Param			input		body		EditAccountRequest	true	"Edit account request"
 //	@Success		200			{object}	PresignedUrlResponse
 //	@Success		204			"No Content"

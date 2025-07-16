@@ -47,6 +47,14 @@ definitions:
           $ref: '#/definitions/Exercise'
         type: array
     type: object
+  FeedbackRequest:
+    properties:
+      message:
+        example: Good job!
+        type: string
+    required:
+    - message
+    type: object
   ImageDescription:
     properties:
       height:
@@ -444,6 +452,43 @@ paths:
       summary: List all exercises
       tags:
       - workouts
+  /feedback:
+    post:
+      consumes:
+      - application/json
+      description: Allows users to submit feedback with a message and optionally attach
+        a screenshot
+      parameters:
+      - description: Feedback details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/FeedbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/PresignedUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Submit user feedback
+      tags:
+      - feedback
   /templates:
     get:
       consumes:

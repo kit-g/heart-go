@@ -295,6 +295,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/feedback": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows users to submit feedback with a message and optionally attach a screenshot",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feedback"
+                ],
+                "summary": "Submit user feedback",
+                "parameters": [
+                    {
+                        "description": "Feedback details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/FeedbackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/PresignedUrlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/templates": {
             "get": {
                 "security": [
@@ -774,6 +831,18 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/Exercise"
                     }
+                }
+            }
+        },
+        "FeedbackRequest": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Good job!"
                 }
             }
         },
