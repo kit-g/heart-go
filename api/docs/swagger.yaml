@@ -1,5 +1,16 @@
 basePath: /
 definitions:
+  EditAccountRequest:
+    properties:
+      action:
+        example: removeAvatar
+        type: string
+      mimeType:
+        example: image/png
+        type: string
+    required:
+    - action
+    type: object
   ErrorResponse:
     properties:
       code:
@@ -47,6 +58,15 @@ definitions:
       width:
         example: 100
         type: integer
+    type: object
+  PresignedUrlResponse:
+    properties:
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+      url:
+        type: string
     type: object
   Set:
     properties:
@@ -348,6 +368,54 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user account
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      description: 'Performs various account editing actions: undoAccountDeletion,
+        removeAvatar, uploadAvatar'
+      operationId: editAccount
+      parameters:
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: Edit account request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/EditAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/PresignedUrlResponse'
+        "204":
+          description: No Content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Edit user account
       tags:
       - accounts
   /exercises:

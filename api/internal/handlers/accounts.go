@@ -70,6 +70,24 @@ func RegisterAccount(c *gin.Context, userId string) (any, error) {
 	return user, nil
 }
 
+// EditAccount godoc
+//
+//	@Summary		Edit user account
+//	@Description	Performs various account editing actions: undoAccountDeletion, removeAvatar, uploadAvatar
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@ID				editAccount
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Param			input		body		EditAccountRequest	true	"Edit account request"
+//	@Success		200			{object}	PresignedUrlResponse
+//	@Success		204			"No Content"
+//	@Failure		400			{object}	ErrorResponse	"Validation error"
+//	@Failure		401			{object}	ErrorResponse	"Unauthorized"
+//	@Failure		403			{object}	ErrorResponse	"Forbidden"
+//	@Failure		500			{object}	ErrorResponse	"Server error"
+//	@Router			/accounts/{accountId} [put]
+//	@Security		BearerAuth
 func EditAccount(c *gin.Context, userId string) (any, error) {
 	var request models.EditAccountRequest
 	if err := c.BindJSON(&request); err != nil {
