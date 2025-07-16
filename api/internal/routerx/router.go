@@ -56,6 +56,10 @@ func Router(origins string) *gin.Engine {
 	accountGroup.PUT(":accountId", Authenticated(handlers.EditAccount))
 	accountGroup.GET(":accountId", Authenticated(handlers.GetAccount))
 
+	feedbackGroup := r.Group("/feedback")
+	feedbackGroup.Use(middleware.AuthenticationMiddleware())
+	feedbackGroup.POST("", Authenticated(handlers.LeaveFeedback))
+
 	return r
 }
 

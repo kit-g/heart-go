@@ -9,9 +9,9 @@ require (
 	github.com/aws/aws-lambda-go v1.49.0
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.17
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.84
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.84.0
 	github.com/aws/aws-sdk-go-v2/service/scheduler v1.13.10
+	github.com/aws/aws-sdk-go-v2/service/sns v1.34.7
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/segmentio/ksuid v1.0.4

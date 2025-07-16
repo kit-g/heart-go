@@ -88,17 +88,6 @@ func NewValidationError(err error) *ValidationError {
 	}
 }
 
-func NewUnauthorizedError(msg string, err error) *UnauthorizedError {
-	return &UnauthorizedError{
-		&baseError{
-			Err:     err,
-			status:  401,
-			message: msg,
-			code:    "Unauthorized",
-		},
-	}
-}
-
 func NewForbiddenError(msg string, err error) *ForbiddenError {
 	return &ForbiddenError{
 		&baseError{

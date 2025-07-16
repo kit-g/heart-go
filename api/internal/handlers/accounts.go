@@ -156,12 +156,14 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 			mimeType = *request.MimeType
 		}
 
+		tag := config.App.UploadDestinationTag()
+
 		response, err := awsx.GeneratePresignedPostURL(
 			c.Request.Context(),
 			config.App.UploadBucket,
 			config.App.AvatarKey(userId),
 			mimeType,
-			config.App.UploadDestinationTag(),
+			&tag,
 		)
 
 		if err != nil {
