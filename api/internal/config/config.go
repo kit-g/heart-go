@@ -42,10 +42,15 @@ type LambdaConfig struct {
 	BackgroundFunctionRole string `env:"BACKGROUND_ROLE" required:"true"`
 }
 
+type SnsConfig struct {
+	MonitoringTopic string `env:"MONITORING_TOPIC" required:"true"`
+}
+
 type AwsConfig struct {
 	SchedulerConfig
 	S3Config
 	LambdaConfig
+	SnsConfig
 	AwsRegion             string `env:"REGION" required:"true"`
 	AccountDeletionOffset int    `env:"ACCOUNT_DELETION_OFFSET" default:"30" required:"true"`
 }

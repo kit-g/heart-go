@@ -10,22 +10,24 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/scheduler"
 	"github.com/aws/aws-sdk-go-v2/service/scheduler/types"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	env "heart/internal/config"
 	"strings"
 	"time"
 )
 
 var (
-	S3       *s3.Client
 	Env      env.AwsConfig
 	events   *scheduler.Client
+	S3       *s3.Client
 	s3Signer *s3.PresignClient
+	SNS      *sns.Client
 )
 
-func Init(c env.AwsConfig) error {
+func Init(ctx context.Context, c env.AwsConfig) error {
 	Env = c
 	cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
+		ctx,
 		config.WithRegion(c.AwsRegion),
 	)
 
@@ -36,6 +38,7 @@ func Init(c env.AwsConfig) error {
 	events = scheduler.NewFromConfig(cfg)
 	S3 = s3.NewFromConfig(cfg)
 	s3Signer = s3.NewPresignClient(S3)
+	SNS = sns.NewFromConfig(cfg)
 
 	return nil
 }
@@ -45,13 +48,12 @@ func GeneratePresignedPostURL(
 	bucket string,
 	key string,
 	contentType string,
-	tagging string,
+	tagging *string,
 ) (*s3.PresignedPostRequest, error) {
 	input := s3.PutObjectInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(key),
 		ContentType: aws.String(contentType),
-		// Don't set Tagging here - we'll handle it manually
 	}
 
 	request, err := s3Signer.PresignPostObject(
@@ -59,13 +61,21 @@ func GeneratePresignedPostURL(
 		&input,
 		func(options *s3.PresignPostOptions) {
 			options.Expires = 15 * time.Minute
-			options.Conditions = []interface{}{
+
+			conditions := make([]interface{}, 0, 3)
+			conditions = append(conditions,
 				[]interface{}{"content-length-range", minContentLength, maxContentLength},
 				map[string]string{"Content-Type": contentType},
-				map[string]string{"tagging": tagging},
+			)
+
+			if tagging != nil {
+				conditions = append(conditions, map[string]string{"tagging": *tagging})
 			}
+
+			options.Conditions = conditions
 		},
 	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign request: %w", err)
 	}
@@ -73,7 +83,11 @@ func GeneratePresignedPostURL(
 	if request.Values == nil {
 		request.Values = make(map[string]string)
 	}
-	request.Values["tagging"] = tagging
+
+	if tagging != nil {
+		request.Values["tagging"] = *tagging
+	}
+
 	request.Values["Content-Type"] = contentType
 
 	return request, nil
@@ -157,6 +171,49 @@ func DeleteAccountDeletionSchedule(ctx context.Context, scheduleArn *string) err
 	}
 
 	return err
+}
+
+func sendSnsMessage(ctx context.Context, topicArn string, message any) error {
+	var m string
+
+	switch v := message.(type) {
+	case string:
+		m = v
+	default:
+		marshal, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Errorf("failed to marshal message: %w", err)
+		}
+		m = string(marshal)
+	}
+
+	defaults := map[string]string{
+		"default": m,
+	}
+
+	wrapped, err := json.Marshal(defaults)
+
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %w", err)
+	}
+
+	input := sns.PublishInput{
+		Message:          aws.String(string(wrapped)),
+		MessageStructure: aws.String("json"),
+		TopicArn:         aws.String(topicArn),
+	}
+
+	_, err = SNS.Publish(ctx, &input)
+
+	if err != nil {
+		return fmt.Errorf("failed to send SNS message: %w", err)
+	}
+
+	return nil
+}
+
+func SendToMonitoring(ctx context.Context, message any) error {
+	return sendSnsMessage(ctx, Env.MonitoringTopic, message)
 }
 
 const (

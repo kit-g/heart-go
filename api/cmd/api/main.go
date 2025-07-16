@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	_ "heart/docs"
@@ -48,7 +49,7 @@ func Init() {
 		return
 	}
 
-	if err := awsx.Init(config.App.AwsConfig); err != nil {
+	if err := awsx.Init(context.Background(), config.App.AwsConfig); err != nil {
 		log.Fatal("Failed to initialize AWS clients:", err)
 		return
 	}
