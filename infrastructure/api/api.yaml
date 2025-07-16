@@ -1,0 +1,267 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Heart API"
+Transform: "AWS::Serverless-2016-10-31"
+
+
+Globals:
+  Function:
+    Architectures: [ arm64 ]
+    Runtime: provided.al2023
+    Handler: bootstrap
+    Timeout: 5
+
+Parameters:
+  DbHost:
+    Type: String
+    Description: "Postgres database endpoint"
+    NoEcho: true
+  DbPassword:
+    Type: String
+    Description: "Postgres database password"
+    NoEcho: true
+  DbUser:
+    Type: String
+    Description: "Postgres database user"
+    NoEcho: true
+  Env:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  FirebaseCredentials:
+    Type: String
+    Description: "Firebase json key"
+    NoEcho: true
+  WorkoutsDatabaseName:
+    Type: String
+    Default: "workouts"
+
+Mappings:
+  Env:
+    dev:
+      AccountDeletionOffset: 2 # days
+      CorsOrigins: "https://dev.media.heart-of.me,https://dev.app.heart-of.me,http://localhost:7357"
+      LogRetention: 3 # days
+      UploadBucket: "583168578067-upload"
+      MediaBucket: "583168578067-user-media"
+      NeedDatabaseDeletionProtection: false
+    prod:
+      AccountDeletionOffset: 30 # days
+      CorsOrigin: "https://media.heart-of.me,https://app.heart-of.me"
+      LogRetention: 90 # days
+      NeedDatabaseDeletionProtection: true
+
+
+Resources:
+  WorkoutsDatabase:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled:
+        Fn::FindInMap: [ Env, !Ref Env, NeedDatabaseDeletionProtection ]
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TableName: !Ref WorkoutsDatabaseName
+
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "heart-api"
+      Description: "Heart of yours API"
+
+  ScheduleGroup:
+    Type: AWS::Scheduler::ScheduleGroup
+    Properties:
+      Name: "account-deletions"
+
+  MonitoringTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: "monitoring-notifications"
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - scheduler.amazonaws.com
+                - apigateway.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: "ApiPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:heart-*"
+              - Effect: Allow
+                Action:
+                  - scheduler:CreateSchedule
+                  - scheduler:DeleteSchedule
+                Resource:
+                  - !Sub "arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}"
+                  - !Sub "arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/${ScheduleGroup}/*"
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/heart-*"
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:PutObjectTagging
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${Bucket}/*"
+                    - Bucket: !FindInMap [ Env, !Ref Env, UploadBucket ]
+                  - !Sub
+                    - "arn:aws:s3:::${Bucket}/*"
+                    - Bucket: !FindInMap [ Env, !Ref Env, MediaBucket ]
+              - Effect: Allow
+                Action:
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${Bucket}/avatars/*"
+                    - Bucket: !FindInMap [ Env, !Ref Env, MediaBucket ]
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref MonitoringTopic
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:BatchGetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt WorkoutsDatabase.Arn
+
+  ProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: "{proxy+}"
+      RestApiId: !Ref Api
+
+#  BackgroundFunction:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: ./background
+#      Description: "Part of Heart API: background handler"
+#      Environment:
+#        Variables:
+#          AUTH_FUNCTION: !GetAtt AuthorizerFunction.Arn
+#          MEDIA_BUCKET: !FindInMap [ Env, !Ref Env, MediaBucket ]
+#          WORKOUTS_TABLE: !Ref WorkoutsDatabase
+#      FunctionName: "heart-background"
+#      Layers:
+#        - arn:aws:lambda:ca-central-1:583168578067:layer:dynamo-utils:2
+#      Role: !GetAtt LambdaExecutionRole.Arn
+#
+#  BackgroundFunctionEventInvokeConfig:
+#    Type: AWS::Lambda::EventInvokeConfig
+#    Properties:
+#      FunctionName: !Ref BackgroundFunction
+#      Qualifier: "$LATEST"
+#      MaximumRetryAttempts: 0
+#      DestinationConfig:
+#        OnFailure:
+#          Destination: !Ref MonitoringTopic
+#
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      CodeUri: ../../api/ # where Makefile is
+      Description: "Part of Heart: API handler"
+      Environment:
+        Variables:
+          ACCOUNT_DELETION_OFFSET: !FindInMap [ Env, !Ref Env, AccountDeletionOffset ]
+          BACKGROUND_FUNCTION: "BackgroundFunction"
+#          BACKGROUND_FUNCTION: !GetAtt BackgroundFunction.Arn
+          BACKGROUND_ROLE: !GetAtt LambdaExecutionRole.Arn
+          CORS_ORIGINS: !FindInMap [ Env, !Ref Env, CorsOrigins ]
+          DB_HOST: !Ref DbHost
+          DB_PASSWORD: !Ref DbPassword
+          DB_PORT: 5432
+          DB_USER: !Ref DbUser
+          DB_NAME: heart
+          GIN_MODE: release
+          MEDIA_BUCKET: !FindInMap [ Env, !Ref Env, MediaBucket ]
+          MODE: "lambda"
+          MONITORING_TOPIC: !Ref MonitoringTopic
+          REGION: !Ref AWS::Region
+          SCHEDULE_GROUP: !Ref ScheduleGroup
+          UPLOAD_BUCKET: !FindInMap [ Env, !Ref Env, UploadBucket ]
+          WORKOUTS_TABLE: !Ref WorkoutsDatabase
+      FunctionName: "heart-api"
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  ApiFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub  "/aws/lambda/${ApiFunction}"
+      RetentionInDays: !FindInMap [ Env, !Ref Env, LogRetention ]
+
+  ApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ApiFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*"
+        - Api: !Ref Api
+
+  ApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: None
+      RestApiId: !Ref Api
+      ResourceId: !Ref ProxyResource
+      HttpMethod: ANY
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub: >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiFunction.Arn}/invocations
+
+  Deployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiFunction
+    Properties:
+      RestApiId: !Ref Api
+
+  Stage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: "api"
+      RestApiId: !Ref Api
+      DeploymentId: !Ref Deployment
+
