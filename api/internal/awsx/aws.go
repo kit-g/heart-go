@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/scheduler"
 	"github.com/aws/aws-sdk-go-v2/service/scheduler/types"
 	env "heart/internal/config"
+	"strings"
 	"time"
 )
 
@@ -124,13 +125,38 @@ func CreateAccountDeletionSchedule(ctx context.Context, userId string) (*time.Ti
 	if err != nil {
 		var conflictErr *types.ConflictException
 		if errors.As(err, &conflictErr) {
-			// schedule already exists, treat as success
+			// schedule already exists, ok
 			return &when, nil, nil
 		}
 		return nil, nil, fmt.Errorf("failed to create schedule: %w", err)
 	}
 
 	return &when, out.ScheduleArn, nil
+}
+
+func DeleteAccountDeletionSchedule(ctx context.Context, scheduleArn *string) error {
+	if scheduleArn == nil {
+		return nil
+	}
+
+	parts := strings.Split(*scheduleArn, "/")
+	scheduleName := parts[len(parts)-1]
+
+	in := scheduler.DeleteScheduleInput{
+		Name:      aws.String(scheduleName),
+		GroupName: aws.String(Env.ScheduleGroup),
+	}
+	_, err := events.DeleteSchedule(ctx, &in)
+
+	if err != nil {
+		var notFound *types.ResourceNotFoundException
+		if errors.As(err, &notFound) {
+			// schedule already exists, ok
+			return nil
+		}
+	}
+
+	return err
 }
 
 const (

@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"heart/internal/awsx"
 	"heart/internal/config"
 	"heart/internal/dbx"
@@ -76,6 +78,37 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 
 	switch request.Action {
 	case "undoAccountDeletion":
+		var user models.User
+
+		if err := dbx.DB.
+			Model(&models.User{}).
+			Where("firebase_uid = ?", userId).
+			First(&user, nil).
+			Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return models.NoContent, nil
+			}
+			return nil, models.NewServerError(err)
+		}
+
+		if user.AccountDeletionSchedule != nil {
+			err := awsx.DeleteAccountDeletionSchedule(c.Request.Context(), user.AccountDeletionSchedule)
+
+			if err != nil {
+				return nil, models.NewServerError(err)
+			}
+		}
+
+		if err := dbx.DB.
+			Model(&models.User{}).
+			Where("firebase_uid = ?", userId).
+			Update("account_deletion_schedule", nil).
+			Update("scheduled_for_deletion_at", nil).
+			Error; err != nil {
+			return nil, models.NewServerError(err)
+		}
+
+		return models.NoContent, nil
 
 	case "removeAvatar":
 		_, err := awsx.DeleteObject(
@@ -95,6 +128,7 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 			Error; err != nil {
 			return nil, models.NewServerError(err)
 		}
+		return models.NoContent, nil
 
 	case "uploadAvatar":
 		var mimeType string
@@ -121,7 +155,8 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 			Fields: response.Values,
 		}, nil
 	}
-	return nil, nil
+
+	return nil, models.NewForbiddenError("Action not allowed", errors.New("action not allowed"))
 }
 
 // DeleteAccount godoc
