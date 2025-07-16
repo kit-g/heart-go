@@ -100,6 +100,8 @@ func allowedOrigins(origins string) []string {
 func corsHeaders(c *gin.Context, origin string) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 }
+
+const allowedHeaders = `Content-Type,Authorization,Accept,Accept-Language,X-Timezone,X-App-Version,Referer,User-Agent,`

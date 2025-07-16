@@ -16,13 +16,13 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 		}
 
 		bearer := strings.TrimPrefix(auth, "Bearer ")
-		token, err := firebasex.VerifyIDToken(bearer)
+		token, err := firebasex.VerifyIDToken(c.Request.Context(), bearer)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
 		}
 
-		c.Set("userID", token.UID) // Save user ID to context
+		c.Set("userID", token.UID)
 		c.Next()
 	}
 }

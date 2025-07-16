@@ -166,31 +166,29 @@ Resources:
       PathPart: "{proxy+}"
       RestApiId: !Ref Api
 
-#  BackgroundFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: ./background
-#      Description: "Part of Heart API: background handler"
-#      Environment:
-#        Variables:
-#          AUTH_FUNCTION: !GetAtt AuthorizerFunction.Arn
-#          MEDIA_BUCKET: !FindInMap [ Env, !Ref Env, MediaBucket ]
-#          WORKOUTS_TABLE: !Ref WorkoutsDatabase
-#      FunctionName: "heart-background"
-#      Layers:
-#        - arn:aws:lambda:ca-central-1:583168578067:layer:dynamo-utils:2
-#      Role: !GetAtt LambdaExecutionRole.Arn
-#
-#  BackgroundFunctionEventInvokeConfig:
-#    Type: AWS::Lambda::EventInvokeConfig
-#    Properties:
-#      FunctionName: !Ref BackgroundFunction
-#      Qualifier: "$LATEST"
-#      MaximumRetryAttempts: 0
-#      DestinationConfig:
-#        OnFailure:
-#          Destination: !Ref MonitoringTopic
-#
+  BackgroundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../api/ # where Makefile is
+      Description: "Part of Heart: background job handler"
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !FindInMap [ Env, !Ref Env, MediaBucket ]
+          FIREBASE_CREDENTIALS: !Ref FirebaseCredentials
+          WORKOUTS_TABLE: !Ref WorkoutsDatabase
+      FunctionName: "heart-background"
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  BackgroundFunctionEventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref BackgroundFunction
+      Qualifier: "$LATEST"
+      MaximumRetryAttempts: 0
+      DestinationConfig:
+        OnFailure:
+          Destination: !Ref MonitoringTopic
+
   ApiFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -201,8 +199,7 @@ Resources:
       Environment:
         Variables:
           ACCOUNT_DELETION_OFFSET: !FindInMap [ Env, !Ref Env, AccountDeletionOffset ]
-          BACKGROUND_FUNCTION: "BackgroundFunction"
-#          BACKGROUND_FUNCTION: !GetAtt BackgroundFunction.Arn
+          BACKGROUND_FUNCTION: !GetAtt BackgroundFunction.Arn
           BACKGROUND_ROLE: !GetAtt LambdaExecutionRole.Arn
           CORS_ORIGINS: !FindInMap [ Env, !Ref Env, CorsOrigins ]
           DB_HOST: !Ref DbHost
@@ -210,6 +207,7 @@ Resources:
           DB_PORT: 5432
           DB_USER: !Ref DbUser
           DB_NAME: heart
+          FIREBASE_CREDENTIALS: !Ref FirebaseCredentials
           GIN_MODE: release
           MEDIA_BUCKET: !FindInMap [ Env, !Ref Env, MediaBucket ]
           MODE: "lambda"

@@ -28,3 +28,4 @@ vscode/
 ignored/
 .junie/
 
+infrastructure/api/api.toml

@@ -79,6 +79,14 @@ func NewAppConfig() (*AppConfig, error) {
 	return cfg, nil
 }
 
+func NewFirebaseConfig() (config *FirebaseConfig, err error) {
+	cfg := &FirebaseConfig{}
+	if err := populate(cfg); err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
 func fromEnv(v reflect.Value, t reflect.Type) error {
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)

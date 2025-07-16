@@ -34,10 +34,14 @@ func Init(credentialsFile string) error {
 
 // VerifyIDToken takes a Firebase ID token (as a string) and verifies it.
 // If the token is valid, it returns the decoded token. Otherwise, it returns an error.
-func VerifyIDToken(idToken string) (*auth.Token, error) {
-	token, err := AuthClient.VerifyIDToken(context.Background(), idToken)
+func VerifyIDToken(ctx context.Context, idToken string) (*auth.Token, error) {
+	token, err := AuthClient.VerifyIDToken(ctx, idToken)
 	if err != nil {
 		return nil, fmt.Errorf("error verifying Firebase ID token: %w", err)
 	}
 	return token, nil
+}
+
+func DeleteUser(ctx context.Context, userId string) error {
+	return AuthClient.DeleteUser(ctx, userId)
 }
