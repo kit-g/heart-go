@@ -33,6 +33,10 @@ func (c *S3Config) UploadDestinationTag() string {
 	)
 }
 
+func (c *S3Config) AvatarKey(userId string) string {
+	return fmt.Sprintf("avatars/%s", userId)
+}
+
 type LambdaConfig struct {
 	BackgroundFunctionArn  string `env:"BACKGROUND_FUNCTION" required:"true"`
 	BackgroundFunctionRole string `env:"BACKGROUND_ROLE" required:"true"`

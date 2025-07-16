@@ -78,6 +78,24 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 	case "undoAccountDeletion":
 
 	case "removeAvatar":
+		_, err := awsx.DeleteObject(
+			c.Request.Context(),
+			config.App.MediaBucket,
+			config.App.AvatarKey(userId),
+		)
+
+		if err != nil {
+			return nil, models.NewServerError(err)
+		}
+
+		if err := dbx.DB.
+			Model(&models.User{}).
+			Where("firebase_uid = ?", userId).
+			Update("avatar_url", nil).
+			Error; err != nil {
+			return nil, models.NewServerError(err)
+		}
+
 	case "uploadAvatar":
 		var mimeType string
 		if request.MimeType == nil || *request.MimeType == "" {
@@ -89,7 +107,7 @@ func EditAccount(c *gin.Context, userId string) (any, error) {
 		response, err := awsx.GeneratePresignedPostURL(
 			c.Request.Context(),
 			config.App.UploadBucket,
-			fmt.Sprintf("avatars/%s", userId),
+			config.App.AvatarKey(userId),
 			mimeType,
 			config.App.UploadDestinationTag(),
 		)
