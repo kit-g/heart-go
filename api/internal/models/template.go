@@ -4,7 +4,6 @@ type Template struct {
 	ModifiableModel
 	Name          string
 	UserID        string             `gorm:"type:text;index"`
-	User          User               `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	OrderInParent int                `gorm:"type:integer;default:0"`
 	Exercises     []TemplateExercise `json:"exercises" gorm:"type:jsonb;serializer:json"`
 }

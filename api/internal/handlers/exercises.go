@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"heart/internal/dbx"
+	"heart/internal/dynamo"
 	"heart/internal/models"
 )
 
@@ -19,22 +19,19 @@ import (
 //	@Failure		500	{object}	ErrorResponse	"Server error"
 //	@Router			/exercises [get]
 //	@Security		BearerAuth
-func GetExercises(_ *gin.Context, _ string) (any, error) {
-	var exercises []models.Exercise
+func GetExercises(c *gin.Context, _ string) (any, error) {
+	exercises, err := dynamo.GetExercises(c.Request.Context())
 
-	query := dbx.DB.Model(&models.Exercise{})
-
-	if err := query.Find(&exercises).Error; err != nil {
+	if err != nil {
 		return nil, models.NewServerError(err)
 	}
 
-	response := models.ExercisesResponse{
+	out := models.ExercisesResponse{
 		Exercises: make([]models.ExerciseOut, len(exercises)),
 	}
-
 	for i, e := range exercises {
-		response.Exercises[i] = models.NewExerciseOut(&e)
+		out.Exercises[i] = models.NewExerciseOut(&e)
 	}
 
-	return response, nil
+	return out, nil
 }
