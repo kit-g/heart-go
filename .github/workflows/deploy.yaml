@@ -58,7 +58,7 @@ jobs:
         run: zip function.zip bootstrap
         working-directory: api
 
-      - name: Update Lambda Function Code
+      - name: "Update Api Lambda Function Code"
         run: |
           aws lambda update-function-code \
             --function-name ${{ env.FUNCTION_NAME }} \
