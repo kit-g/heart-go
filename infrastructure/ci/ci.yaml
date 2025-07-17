@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Heart app CI resources"
+
+Parameters:
+  Env:
+    Type: String
+    AllowedValues: [ dev, prod ]
+
+Mappings:
+  Env:
+    dev:
+      CloudFrontDistribution: "E2QX06VIJT572Y"
+      GitHubIdp: "arn:aws:iam::583168578067:oidc-provider/token.actions.githubusercontent.com"
+      HostingBucket: "583168578067-heart-app"
+    prod:
+      CloudFrontDistribution: ""
+      GitHubIdp: ""
+      HostingBucket: ""
+
+Resources:
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: HeartGitHubActionsDeployRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !FindInMap [ Env, !Ref Env, GitHubIdp ]
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub:
+                  - "repo:kit-g/heart-go:*"
+                  - "repo:kit-g/heart-go:ref:refs/heads/*"
+                  - "repo:kit-g/heart-go:ref:refs/tags/*"
+                  - "repo:kit-g/heart-go:environment:*"
+
+      Policies:
+        - PolicyName: 'WebAppDeploymentPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                  - 's3:DeleteObject'
+                Resource:
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}'
+                    - Bucket: !FindInMap [ Env, !Ref Env, HostingBucket ]
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}/*'
+                    - Bucket: !FindInMap [ Env, !Ref Env, HostingBucket ]
+              - Effect: Allow
+                Action: 'cloudfront:CreateInvalidation'
+                Resource: !Sub
+                  - 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+                  - Distribution: !FindInMap [ Env, !Ref Env, CloudFrontDistribution ]
+        - PolicyName: 'ApiDeploymentPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'lambda:UpdateFunctionCode'
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:heart-*"
+
+Outputs:
+  GitHubOIDCProvider:
+    Description: 'GitHub federated identity provider role'
+    Value: !GetAtt GitHubActionsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-github-idp-role-arn'
