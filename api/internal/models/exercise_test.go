@@ -1,0 +1,168 @@
+package models
+
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"testing"
+)
+
+func TestExercise_String(t *testing.T) {
+	tests := []struct {
+		name     string
+		exercise Exercise
+		expected string
+	}{
+		{
+			name: "Exercise with name",
+			exercise: Exercise{
+				Name: "Push Up",
+			},
+			expected: "Push Up",
+		},
+		{
+			name: "Exercise with empty name",
+			exercise: Exercise{
+				Name: "",
+			},
+			expected: "",
+		},
+		{
+			name: "Exercise with long name",
+			exercise: Exercise{
+				Name: "This is a very long exercise name that might be used in some cases",
+			},
+			expected: "This is a very long exercise name that might be used in some cases",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.exercise.String()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestNewExerciseOut(t *testing.T) {
+	t.Run("Exercise with all fields", func(t *testing.T) {
+		exercise := &Exercise{
+			Name:            "Push Up",
+			Category:        "Body weight",
+			Target:          "Chest",
+			Asset:           "https://example.com/pushup.jpg",
+			AssetWidth:      800,
+			AssetHeight:     600,
+			Thumbnail:       "https://example.com/pushup-thumb.jpg",
+			ThumbnailWidth:  200,
+			ThumbnailHeight: 150,
+			Instructions:    "Keep your body straight and lower yourself until your chest almost touches the ground.",
+		}
+
+		result := NewExerciseOut(exercise)
+
+		assert.Equal(t, "Push Up", result.Name)
+		assert.Equal(t, "Body weight", result.Category)
+		assert.Equal(t, "Chest", result.Target)
+
+		require.NotNil(t, result.Asset)
+		assert.Equal(t, "https://example.com/pushup.jpg", *result.Asset.Link)
+		assert.Equal(t, 800, *result.Asset.Width)
+		assert.Equal(t, 600, *result.Asset.Height)
+
+		require.NotNil(t, result.Thumbnail)
+		assert.Equal(t, "https://example.com/pushup-thumb.jpg", *result.Thumbnail.Link)
+		assert.Equal(t, 200, *result.Thumbnail.Width)
+		assert.Equal(t, 150, *result.Thumbnail.Height)
+
+		require.NotNil(t, result.Instructions)
+		assert.Equal(t, "Keep your body straight and lower yourself until your chest almost touches the ground.", *result.Instructions)
+	})
+
+	t.Run("Exercise with minimal fields", func(t *testing.T) {
+		exercise := &Exercise{
+			Name:     "Squat",
+			Category: "Body weight",
+			Target:   "Legs",
+		}
+
+		result := NewExerciseOut(exercise)
+
+		assert.Equal(t, "Squat", result.Name)
+		assert.Equal(t, "Body weight", result.Category)
+		assert.Equal(t, "Legs", result.Target)
+		assert.Nil(t, result.Asset)
+		assert.Nil(t, result.Thumbnail)
+		require.NotNil(t, result.Instructions)
+		assert.Equal(t, "", *result.Instructions)
+	})
+
+	t.Run("Exercise with only asset", func(t *testing.T) {
+		exercise := &Exercise{
+			Name:        "Plank",
+			Category:    "Core",
+			Target:      "Abs",
+			Asset:       "https://example.com/plank.jpg",
+			AssetWidth:  400,
+			AssetHeight: 300,
+		}
+
+		result := NewExerciseOut(exercise)
+
+		assert.Equal(t, "Plank", result.Name)
+		require.NotNil(t, result.Asset)
+		assert.Equal(t, "https://example.com/plank.jpg", *result.Asset.Link)
+		assert.Equal(t, 400, *result.Asset.Width)
+		assert.Equal(t, 300, *result.Asset.Height)
+		assert.Nil(t, result.Thumbnail)
+	})
+
+	t.Run("Exercise with only thumbnail", func(t *testing.T) {
+		exercise := &Exercise{
+			Name:            "Burpee",
+			Category:        "Cardio",
+			Target:          "Full body",
+			Thumbnail:       "https://example.com/burpee-thumb.jpg",
+			ThumbnailWidth:  100,
+			ThumbnailHeight: 75,
+		}
+
+		result := NewExerciseOut(exercise)
+
+		assert.Equal(t, "Burpee", result.Name)
+		assert.Nil(t, result.Asset)
+		require.NotNil(t, result.Thumbnail)
+		assert.Equal(t, "https://example.com/burpee-thumb.jpg", *result.Thumbnail.Link)
+		assert.Equal(t, 100, *result.Thumbnail.Width)
+		assert.Equal(t, 75, *result.Thumbnail.Height)
+	})
+}
+
+func TestExerciseStructFields(t *testing.T) {
+	t.Run("Exercise with all fields", func(t *testing.T) {
+		exercise := Exercise{
+			Name:            "Push Up",
+			Category:        "Body weight",
+			Target:          "Chest",
+			Asset:           "https://example.com/asset.jpg",
+			AssetWidth:      800,
+			AssetHeight:     600,
+			Thumbnail:       "https://example.com/thumb.jpg",
+			ThumbnailWidth:  200,
+			ThumbnailHeight: 150,
+			Instructions:    "Push up instructions",
+			UserID:          "user123",
+		}
+
+		assert.Equal(t, "Push Up", exercise.Name)
+		assert.Equal(t, "Body weight", exercise.Category)
+		assert.Equal(t, "Chest", exercise.Target)
+		assert.Equal(t, "https://example.com/asset.jpg", exercise.Asset)
+		assert.Equal(t, 800, exercise.AssetWidth)
+		assert.Equal(t, 600, exercise.AssetHeight)
+		assert.Equal(t, "https://example.com/thumb.jpg", exercise.Thumbnail)
+		assert.Equal(t, 200, exercise.ThumbnailWidth)
+		assert.Equal(t, 150, exercise.ThumbnailHeight)
+		assert.Equal(t, "Push up instructions", exercise.Instructions)
+		assert.Equal(t, "user123", exercise.UserID)
+	})
+}
