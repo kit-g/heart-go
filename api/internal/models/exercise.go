@@ -2,13 +2,13 @@ package models
 
 type Exercise struct {
 	PK           string            `dynamodbav:"pk"` // always "EXERCISE"
-	Name         string            `gorm:"primaryKey;not null" dynamodbav:"sk"`
-	Category     string            `gorm:"not null" dynamodbav:"category"`
-	Target       string            `gorm:"not null" dynamodbav:"target"`
-	Asset        *ImageDescription `gorm:"type:text" dynamodbav:"asset,omitempty"`
-	Thumbnail    *ImageDescription `gorm:"type:text" dynamodbav:"thumbnail,omitempty"`
-	Instructions *string           `gorm:"type:text" dynamodbav:"instructions,omitempty"`
-	UserID       string            `gorm:"type:text" dynamodbav:"userId,omitempty"`
+	Name         string            `dynamodbav:"sk"`
+	Category     string            `dynamodbav:"category"`
+	Target       string            `dynamodbav:"target"`
+	Asset        *ImageDescription `dynamodbav:"asset,omitempty"`
+	Thumbnail    *ImageDescription `dynamodbav:"thumbnail,omitempty"`
+	Instructions *string           `dynamodbav:"instructions,omitempty"`
+	UserID       string            `dynamodbav:"userId,omitempty"`
 }
 
 func (e *Exercise) String() string {
