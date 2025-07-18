@@ -1,12 +1,10 @@
 package models
 
 import (
-	"fmt"
 	"time"
 )
 
 type User struct {
-	ModifiableModel
 	Username                string     `json:"displayName" example:"jane_doe" binding:"required" gorm:"uniqueIndex;not null"`
 	Email                   string     `json:"email" example:"jane_doe@mail.com" binding:"required" gorm:"uniqueIndex;not null"`
 	FirebaseUID             string     `json:"id" example:"HW4beTVvbTUPRxun9MXZxwKPjmC2" binding:"required" gorm:"uniqueIndex"`
@@ -14,10 +12,6 @@ type User struct {
 	AccountDeletionSchedule *string    `json:"accountDeletionSchedule,omitempty" gorm:"type:varchar(255);"`
 	ScheduledForDeletionAt  *time.Time `json:"scheduledForDeletionAt,omitempty"`
 } // @name User
-
-func (u User) String() string {
-	return fmt.Sprintf("%s, #%d", u.Username, u.ID)
-}
 
 type EditAccountRequest struct {
 	Action   string  `json:"action" example:"removeAvatar" binding:"required"`
