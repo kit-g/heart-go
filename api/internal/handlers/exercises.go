@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"heart/internal/dynamo"
+	"heart/internal/dbx"
 	"heart/internal/models"
 )
 
@@ -20,7 +20,7 @@ import (
 //	@Router			/exercises [get]
 //	@Security		BearerAuth
 func GetExercises(c *gin.Context, _ string) (any, error) {
-	exercises, err := dynamo.GetExercises(c.Request.Context())
+	exercises, err := dbx.GetExercises(c.Request.Context())
 
 	if err != nil {
 		return nil, models.NewServerError(err)

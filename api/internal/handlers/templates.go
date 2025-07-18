@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"heart/internal/dynamo"
+	"heart/internal/dbx"
 	"heart/internal/models"
 )
 
@@ -21,7 +21,7 @@ import (
 //	@Router			/templates [get]
 //	@Security		BearerAuth
 func GetTemplates(c *gin.Context, userId string) (any, error) {
-	templates, err := dynamo.GetTemplates(c.Request.Context(), userId)
+	templates, err := dbx.GetTemplates(c.Request.Context(), userId)
 
 	if err != nil {
 		return nil, models.NewServerError(err)
@@ -50,7 +50,7 @@ func GetTemplates(c *gin.Context, userId string) (any, error) {
 func GetTemplate(c *gin.Context, userId string) (any, error) {
 	templateId := c.Param("templateId")
 
-	template, err := dynamo.GetTemplate(c.Request.Context(), userId, templateId)
+	template, err := dbx.GetTemplate(c.Request.Context(), userId, templateId)
 
 	if err != nil {
 		return nil, models.NewServerError(err)
@@ -85,7 +85,7 @@ func MakeTemplate(c *gin.Context, userId string) (any, error) {
 
 	created := models.NewTemplate(&template, userId)
 
-	saved, err := dynamo.SaveTemplate(c.Request.Context(), created)
+	saved, err := dbx.SaveTemplate(c.Request.Context(), created)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func MakeTemplate(c *gin.Context, userId string) (any, error) {
 func DeleteTemplate(c *gin.Context, userId string) (any, error) {
 	templateId := c.Param("templateId")
 
-	err := dynamo.DeleteTemplate(c.Request.Context(), userId, templateId)
+	err := dbx.DeleteTemplate(c.Request.Context(), userId, templateId)
 
 	if err != nil {
 		return nil, models.NewServerError(err)

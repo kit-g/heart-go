@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"heart/internal/dynamo"
+	"heart/internal/dbx"
 	"heart/internal/models"
 	"strconv"
 )
@@ -33,7 +33,7 @@ func GetWorkouts(c *gin.Context, userId string) (any, error) {
 
 	cursor := c.Query("cursor")
 
-	workouts, last, err := dynamo.GetWorkouts(c.Request.Context(), userId, pageSize, cursor)
+	workouts, last, err := dbx.GetWorkouts(c.Request.Context(), userId, pageSize, cursor)
 
 	if err != nil {
 		return nil, models.NewServerError(err)
@@ -63,7 +63,7 @@ func GetWorkouts(c *gin.Context, userId string) (any, error) {
 func GetWorkout(c *gin.Context, userId string) (any, error) {
 	workoutId := c.Param("workoutId")
 
-	workout, err := dynamo.GetWorkout(c.Request.Context(), userId, workoutId)
+	workout, err := dbx.GetWorkout(c.Request.Context(), userId, workoutId)
 
 	if err != nil {
 		return nil, models.NewServerError(err)
@@ -94,7 +94,7 @@ func MakeWorkout(c *gin.Context, userID string) (any, error) {
 
 	workout := models.NewWorkout(&workoutIn, userID)
 
-	saved, err := dynamo.SaveWorkout(c.Request.Context(), workout)
+	saved, err := dbx.SaveWorkout(c.Request.Context(), workout)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func MakeWorkout(c *gin.Context, userID string) (any, error) {
 func DeleteWorkout(c *gin.Context, userId string) (any, error) {
 	workoutId := c.Param("workoutId")
 
-	err := dynamo.DeleteWorkout(c.Request.Context(), userId, workoutId)
+	err := dbx.DeleteWorkout(c.Request.Context(), userId, workoutId)
 
 	var notFound *models.NotFoundError
 	if ok := errors.As(err, &notFound); ok {
